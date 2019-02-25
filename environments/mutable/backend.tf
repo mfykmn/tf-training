@@ -12,10 +12,3 @@ terraform {
     encrypt    = true
   }
 }
-
-resource "aws_s3_bucket" "tfstate" {
-  bucket = "tf-training.tfstate"
-  versioning {
-    enabled = true
-  }
-}
