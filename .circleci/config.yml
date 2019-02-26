@@ -40,7 +40,7 @@ commands:
     steps:
       - restore_cache:
           name: Restore terraform plan result
-          key: plan-{{ checksum "<< parameters.path >>/.terraform/plan.txt" }}
+          key: plan-{{ checksum "<< parameters.path >>/plan.txt" }}
   save_plan:
     parameters:
       path:
@@ -49,9 +49,9 @@ commands:
     steps:
       - save_cache:
           name: Cache terraform plan result
-          key: plan-{{ checksum "<< parameters.path >>/.terraform/plan.txt" }}
+          key: plan-{{ checksum "<< parameters.path >>/plan.txt" }}
           paths:
-            - << parameters.path >>/.terraform/plan.txt
+            - << parameters.path >>/plan.txt
 
 jobs:
   init:
@@ -100,7 +100,7 @@ jobs:
           working_directory: << parameters.path >>
       - run:
           name: Execute terraform plan
-          command: terraform plan -out .terraform/plan.txt
+          command: terraform plan -out plan.txt
           working_directory: << parameters.path >>
       - when:
           condition: << parameters.run_save_plan >>
@@ -136,7 +136,7 @@ jobs:
                 path: << parameters.path >>
             - run:
                 name: Execute terraform apply with plan file
-                command: terraform apply -input .terraform/plan.txt
+                command: terraform apply -input plan.txt
                 working_directory: << parameters.path >>
       - unless:
           condition: << parameters.run_restore_plan >>
@@ -156,7 +156,7 @@ workflows:
           run_save_plan: true
           requires:
             - init
-      - check-plan:
+      - hold:
           type: approval
           requires:
             - plan
@@ -164,4 +164,4 @@ workflows:
           path: environments/mutable
           run_restore_plan: true
           requires:
-            - check-plan
+            - hold
