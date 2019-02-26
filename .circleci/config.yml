@@ -136,6 +136,8 @@ workflows:
       - plan:
           path: environments/mutable
           run_save_plan: true
+          requires:
+            - init
       - check-plan:
           type: approval
           requires:
