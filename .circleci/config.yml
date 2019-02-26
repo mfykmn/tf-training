@@ -21,7 +21,6 @@ commands:
           paths:
             - .terraform.d/plugin-cache
             - << parameters.path >>/.terraform/plugins
-            - << parameters.path >>/.terraform/modules
   restore_plan:
     parameters:
       path:
@@ -83,6 +82,7 @@ jobs:
     steps:
       - checkout
       - restore_plugins
+      - run: terraform get
       - run:
           name: Execute terraform plan
           command: terraform plan -out .terraform/plan.txt
@@ -110,6 +110,7 @@ jobs:
     steps:
       - checkout
       - restore_plugins
+      - run: terraform get
       - when:
           condition: << parameters.run_restore_plan >>
           steps:
