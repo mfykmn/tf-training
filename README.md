@@ -1,4 +1,5 @@
 # tf-training
+[![CircleCI](https://circleci.com/gh/mafuyuk/tf-training.svg?style=svg)](https://circleci.com/gh/mafuyuk/tf-training)
 
 ## AWS credentialsの設定追加
 ```bash
