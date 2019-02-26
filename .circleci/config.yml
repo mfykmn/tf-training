@@ -23,6 +23,8 @@ commands:
       - save_cache:
           name: Cache terraform plan result
           key: plan-{{ checksum "environments/<< parameters.target >>/.terraform/plan.txt" }}
+          paths:
+            - environments/<< parameters.target >>/.terraform/plan.txt
 
 jobs:
   plan:
@@ -41,9 +43,9 @@ jobs:
     steps:
       - checkout
       - run:
-        name: Execute terraform plan
-        command: terraform plan -out .terraform/plan.txt
-        working_directory: environments/<< parameters.target >>
+          name: Execute terraform plan
+          command: terraform plan -out .terraform/plan.txt
+          working_directory: environments/<< parameters.target >>
       - when:
           condition: << parameters.run_save_plan >>
           steps:
@@ -70,7 +72,7 @@ jobs:
             - restore_plan:
                 target: << parameters.target >>
             - run:
-                name: Execute terraform apply with planfile
+                name: Execute terraform apply with plan file
                 command: terraform apply -input .terraform/plan.txt
                 working_directory: environments/<< parameters.target >>
       - unless:
