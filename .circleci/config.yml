@@ -40,7 +40,7 @@ commands:
     steps:
       - restore_cache:
           name: Restore terraform plan result
-          key: plan-{{ checksum "<< parameters.path >>/plan.txt" }}
+          key: plan-{{ .Revision }}
   save_plan:
     parameters:
       path:
@@ -49,7 +49,7 @@ commands:
     steps:
       - save_cache:
           name: Cache terraform plan result
-          key: plan-{{ checksum "<< parameters.path >>/plan.txt" }}
+          key: plan-{{ .Revision }}
           paths:
             - << parameters.path >>/plan.txt
 
