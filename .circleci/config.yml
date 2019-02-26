@@ -1,16 +1,83 @@
 version: 2.1
-jobs:
-  build:
-    docker:
-      - image: debian:stretch
 
+orbs:
+  aws-cli: circleci/aws-cli@0.1.9
+
+commands:
+  restore_plan:
+    parameters:
+      target:
+        type: enum
+        enum: ["mutable", "immutable"]
+    steps:
+      - restore_cache:
+          name: Restore terraform plan result
+          key: plan-{{ checksum "environments/<< parameters.target >>/.terraform/plan" }}
+
+  save_plan:
+    parameters:
+      target:
+        type: enum
+        enum: ["mutable", "immutable"]
+    steps:
+      - save_cache:
+          name: Cache terraform plan result
+          key: plan-{{ checksum "environments/<< parameters.target >>/.terraform/plan" }}
+          paths:
+            - ~/workspace/node_modules
+
+jobs:
+  plan:
+    executor: aws-cli/default
+    parameters:
+      target:
+        type: enum
+        enum: ["mutable", "immutable"]
+      run_save_plan:
+        type: boolean
     steps:
       - checkout
+      - run: cd environments/<< parameters.target >>
+      - run: terraform plan -out .terraform/plan
+      - when:
+          condition: << parameters.run_save_plan >>
+          steps:
+            - save_plan:
+                target: << parameters.target >>
+  apply:
+    executor: aws-cli/default
+    parameters:
+      target:
+        type: enum
+        enum: ["mutable", "immutable"]
+      run_restore_plan:
+        type: boolean
+    steps:
+      - checkout
+      - run: cd environments/<< parameters.target >>
+      - when:
+          condition: << parameters.run_restore_plan >>
+          steps:
+            - restore_plan:
+                target: << parameters.target >>
+            - run: terraform apply -input .terraform/plan
+      - unless:
+          condition: << parameters.run_restore_plan >>
+          steps:
+            - run: terraform apply
 
-      - run:
-          name: Greeting
-          command: echo Hello, world.
-
-      - run:
-          name: Print the Current Time
-          command: date
+workflows:
+  deploy-mutable:
+    jobs:
+      - plan:
+          target: mutable
+          run_save_plan: true
+      - check-plan:
+          type: approval
+          requires:
+            - plan
+      - apply:
+          target: mutable
+          run_restore_plan: true
+          requires:
+            - check-plan
