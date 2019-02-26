@@ -12,7 +12,7 @@ commands:
     steps:
       - restore_cache:
           name: Restore terraform plan result
-          key: plan-{{ checksum "environments/<< parameters.target >>/.terraform/plan" }}
+          key: plan-{{ checksum "environments/<< parameters.target >>/.terraform/plan.txt" }}
 
   save_plan:
     parameters:
@@ -22,7 +22,7 @@ commands:
     steps:
       - save_cache:
           name: Cache terraform plan result
-          key: plan-{{ checksum "environments/<< parameters.target >>/.terraform/plan" }}
+          key: plan-{{ checksum "environments/<< parameters.target >>/.terraform/plan.txt" }}
 
 jobs:
   plan:
@@ -40,8 +40,10 @@ jobs:
         type: boolean
     steps:
       - checkout
-      - run: cd environments/<< parameters.target >>
-      - run: terraform plan -out .terraform/plan
+      - run:
+        name: Execute terraform plan
+        command: terraform plan -out .terraform/plan.txt
+        working_directory: environments/<< parameters.target >>
       - when:
           condition: << parameters.run_save_plan >>
           steps:
@@ -62,17 +64,22 @@ jobs:
         type: boolean
     steps:
       - checkout
-      - run: cd environments/<< parameters.target >>
       - when:
           condition: << parameters.run_restore_plan >>
           steps:
             - restore_plan:
                 target: << parameters.target >>
-            - run: terraform apply -input .terraform/plan
+            - run:
+                name: Execute terraform apply with planfile
+                command: terraform apply -input .terraform/plan.txt
+                working_directory: environments/<< parameters.target >>
       - unless:
           condition: << parameters.run_restore_plan >>
           steps:
-            - run: terraform apply
+            - run:
+                name: Execute terraform apply
+                command: terraform apply
+                working_directory: environments/<< parameters.target >>
 
 workflows:
   deploy-mutable:
