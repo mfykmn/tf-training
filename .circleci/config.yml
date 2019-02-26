@@ -29,7 +29,12 @@ commands:
 jobs:
   plan:
     executor: aws-cli/default
+    docker:
+      - image: hashicorp/terraform:<< parameters.terraform-version >>
     parameters:
+      terraform-version:
+        type: string
+        default: latest
       target:
         type: enum
         enum: ["mutable", "immutable"]
@@ -46,7 +51,12 @@ jobs:
                 target: << parameters.target >>
   apply:
     executor: aws-cli/default
+    docker:
+      - image: hashicorp/terraform:<< parameters.terraform-version >>
     parameters:
+      terraform-version:
+        type: string
+        default: latest
       target:
         type: enum
         enum: ["mutable", "immutable"]
