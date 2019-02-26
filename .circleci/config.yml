@@ -4,6 +4,18 @@ orbs:
   aws-cli: circleci/aws-cli@0.1.9
 
 commands:
+  restore_plugins:
+    steps:
+      - restore_cache:
+          name: Restore terraform plugins
+          key: plugins-{{ .Branch }}
+  save_plugins:
+    steps:
+      - save_cache:
+          name: Cache terraform plugins
+          key: plugins-{{ .Branch }}
+          paths:
+            - .terraform.d/plugin-cache
   restore_plan:
     parameters:
       target:
@@ -13,7 +25,6 @@ commands:
       - restore_cache:
           name: Restore terraform plan result
           key: plan-{{ checksum "environments/<< parameters.target >>/.terraform/plan.txt" }}
-
   save_plan:
     parameters:
       target:
@@ -27,6 +38,26 @@ commands:
             - environments/<< parameters.target >>/.terraform/plan.txt
 
 jobs:
+  init:
+    docker:
+      - image: hashicorp/terraform:<< parameters.terraform-version >>
+    environment:
+      - TF_PLUGIN_CACHE_DIR: .terraform.d/plugin-cache
+    parameters:
+      terraform-version:
+        type: string
+        default: latest
+      target:
+        type: enum
+        enum: ["mutable", "immutable"]
+    steps:
+      - checkout
+      - restore_plugins
+      - run:
+          name: Execute terraform init
+          command: terraform init
+          working_directory: environments/<< parameters.target >>
+      - save_plugins
   plan:
     executor: aws-cli/default
     docker:
@@ -86,6 +117,8 @@ jobs:
 workflows:
   deploy-mutable:
     jobs:
+      - init:
+          target: mutable
       - plan:
           target: mutable
           run_save_plan: true
