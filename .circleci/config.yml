@@ -10,32 +10,37 @@ commands:
           name: Restore terraform plugins
           key: plugins-{{ .Branch }}
   save_plugins:
+    parameters:
+      path:
+        type: string
+        default: .
     steps:
       - save_cache:
           name: Cache terraform plugins
           key: plugins-{{ .Branch }}
           paths:
             - .terraform.d/plugin-cache
+            - << parameters.path >>/.terraform/plugins
   restore_plan:
     parameters:
-      target:
-        type: enum
-        enum: ["mutable", "immutable"]
+      path:
+        type: string
+        default: .
     steps:
       - restore_cache:
           name: Restore terraform plan result
-          key: plan-{{ checksum "environments/<< parameters.target >>/.terraform/plan.txt" }}
+          key: plan-{{ checksum "<< parameters.path >>/.terraform/plan.txt" }}
   save_plan:
     parameters:
-      target:
-        type: enum
-        enum: ["mutable", "immutable"]
+      path:
+        type: string
+        default: .
     steps:
       - save_cache:
           name: Cache terraform plan result
-          key: plan-{{ checksum "environments/<< parameters.target >>/.terraform/plan.txt" }}
+          key: plan-{{ checksum "<< parameters.path >>/.terraform/plan.txt" }}
           paths:
-            - environments/<< parameters.target >>/.terraform/plan.txt
+            - << parameters.path >>/.terraform/plan.txt
 
 jobs:
   init:
@@ -47,28 +52,31 @@ jobs:
       terraform-version:
         type: string
         default: latest
-      target:
-        type: enum
-        enum: ["mutable", "immutable"]
+      path:
+        type: string
+        default: .
     steps:
       - checkout
       - restore_plugins
       - run:
           name: Execute terraform init
           command: terraform init
-          working_directory: environments/<< parameters.target >>
-      - save_plugins
+          working_directory: << parameters.path >>
+      - save_plugins:
+          path: << parameters.path >>
   plan:
     executor: aws-cli/default
     docker:
       - image: hashicorp/terraform:<< parameters.terraform-version >>
+    environment:
+      - TF_PLUGIN_CACHE_DIR: .terraform.d/plugin-cache
     parameters:
       terraform-version:
         type: string
         default: latest
-      target:
-        type: enum
-        enum: ["mutable", "immutable"]
+      path:
+        type: string
+        default: .
       run_save_plan:
         type: boolean
     steps:
@@ -76,23 +84,25 @@ jobs:
       - run:
           name: Execute terraform plan
           command: terraform plan -out .terraform/plan.txt
-          working_directory: environments/<< parameters.target >>
+          working_directory: << parameters.path >>
       - when:
           condition: << parameters.run_save_plan >>
           steps:
             - save_plan:
-                target: << parameters.target >>
+                path: << parameters.path >>
   apply:
     executor: aws-cli/default
     docker:
       - image: hashicorp/terraform:<< parameters.terraform-version >>
+    environment:
+      - TF_PLUGIN_CACHE_DIR: .terraform.d/plugin-cache
     parameters:
       terraform-version:
         type: string
         default: latest
-      target:
-        type: enum
-        enum: ["mutable", "immutable"]
+      path:
+        type: string
+        default: .
       run_restore_plan:
         type: boolean
     steps:
@@ -101,33 +111,33 @@ jobs:
           condition: << parameters.run_restore_plan >>
           steps:
             - restore_plan:
-                target: << parameters.target >>
+                path: << parameters.path >>
             - run:
                 name: Execute terraform apply with plan file
                 command: terraform apply -input .terraform/plan.txt
-                working_directory: environments/<< parameters.target >>
+                working_directory: << parameters.path >>
       - unless:
           condition: << parameters.run_restore_plan >>
           steps:
             - run:
                 name: Execute terraform apply
                 command: terraform apply
-                working_directory: environments/<< parameters.target >>
+                working_directory: << parameters.path >>
 
 workflows:
   deploy-mutable:
     jobs:
       - init:
-          target: mutable
+          path: environments/mutable
       - plan:
-          target: mutable
+          path: environments/mutable
           run_save_plan: true
       - check-plan:
           type: approval
           requires:
             - plan
       - apply:
-          target: mutable
+          path: environments/mutable
           run_restore_plan: true
           requires:
             - check-plan
