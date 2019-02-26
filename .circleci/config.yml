@@ -10,16 +10,27 @@ commands:
           name: Restore terraform plugins
           key: plugins-{{ .Branch }}
   save_plugins:
-    parameters:
-      path:
-        type: string
-        default: .
     steps:
       - save_cache:
           name: Cache terraform plugins
           key: plugins-{{ .Branch }}
           paths:
             - .terraform.d/plugin-cache
+  restore_init_data:
+    steps:
+      - restore_cache:
+          name: Restore .terraform
+          key: init-data-{{ .Revision }}
+  save_init_data:
+    parameters:
+      path:
+        type: string
+        default: .
+    steps:
+      - save_cache:
+          name: Cache .terraform
+          key: init-data-{{ .Revision }}
+          paths:
             - << parameters.path >>/.terraform
   restore_plan:
     parameters:
@@ -62,7 +73,8 @@ jobs:
           name: Execute terraform init
           command: terraform init
           working_directory: << parameters.path >>
-      - save_plugins:
+      - save_plugins
+      - save_init_data:
           path: << parameters.path >>
   plan:
     executor: aws-cli/default
@@ -81,7 +93,7 @@ jobs:
         type: boolean
     steps:
       - checkout
-      - restore_plugins
+      - restore_init_data
       - run:
           name: Get terraform module
           command: terraform get
@@ -112,7 +124,7 @@ jobs:
         type: boolean
     steps:
       - checkout
-      - restore_plugins
+      - restore_init_data
       - run:
           name: Get terraform module
           command: terraform get
