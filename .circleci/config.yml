@@ -20,7 +20,7 @@ commands:
           key: plugins-{{ .Branch }}
           paths:
             - .terraform.d/plugin-cache
-            - << parameters.path >>/.terraform/plugins
+            - << parameters.path >>/.terraform
   restore_plan:
     parameters:
       path:
