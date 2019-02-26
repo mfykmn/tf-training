@@ -82,7 +82,10 @@ jobs:
     steps:
       - checkout
       - restore_plugins
-      - run: terraform get
+      - run:
+          name: Get terraform module
+          command: terraform get
+          working_directory: << parameters.path >>
       - run:
           name: Execute terraform plan
           command: terraform plan -out .terraform/plan.txt
@@ -110,7 +113,10 @@ jobs:
     steps:
       - checkout
       - restore_plugins
-      - run: terraform get
+      - run:
+          name: Get terraform module
+          command: terraform get
+          working_directory: << parameters.path >>
       - when:
           condition: << parameters.run_restore_plan >>
           steps:
