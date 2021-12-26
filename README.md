@@ -34,3 +34,11 @@ $ terraform apply -input .terraform/plan
 ```bash
 $ export TF_LOG=DEBUG
 ```
+
+## linter
+```bash
+$ awsp
+$ awsmfa
+$ cd ./modules/config/vpc-default-security-group-closed
+$ TFLINT_LOG=debug tflint
+```

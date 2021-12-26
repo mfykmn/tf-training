@@ -1,0 +1,44 @@
+---
+description: Revoke all ip permissions.
+schemaVersion: "0.3"
+assumeRole: "{{ AutomationAssumeRole }}"
+parameters:
+  GroupId:
+    type: String
+    description: (Required) Security Group ID
+    allowedPattern: ^([s][g]\-)([0-9a-f]){1,}$
+  AutomationAssumeRole:
+    type: String
+    description: (Optional) The ARN of the role that allows Automation to perform the actions on your behalf.
+    default: ""
+mainSteps:
+  - name: GetSecurityGroupInfo
+    action: aws:executeAwsApi
+    onFailure: Abort
+    inputs:
+      Service: ec2
+      Api: DescribeSecurityGroups
+      GroupIds: ["{{GroupId}}"]
+    outputs:
+      - Name: IpPermissionsIngress
+        Selector: $.SecurityGroups[0].IpPermissions
+        Type: MapList
+      - Name: IpPermissionsEgress
+        Selector: $.SecurityGroups[0].IpPermissionsEgress
+        Type: MapList
+  - name: RevokeAllIngress
+    action: aws:executeAwsApi
+    onFailure: Continue
+    inputs:
+      Service: ec2
+      Api: RevokeSecurityGroupIngress
+      GroupId: "{{GroupId}}"
+      IpPermissions: "{{GetSecurityGroupInfo.IpPermissionsIngress}}"
+  - name: RevokeAllEgress
+    action: aws:executeAwsApi
+    onFailure: Continue
+    inputs:
+      Service: ec2
+      Api: RevokeSecurityGroupEgress
+      GroupId: "{{GroupId}}"
+      IpPermissions: "{{GetSecurityGroupInfo.IpPermissionsEgress}}"
