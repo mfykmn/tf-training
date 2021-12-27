@@ -13,7 +13,7 @@ resource "aws_iam_role" "revoke_security_group" {
   name               = "RevokeSecurityGroup"
   description        = "revoke_security_group_role. Created from Terraform."
   assume_role_policy = jsonencode(yamldecode(data.template_file.revoke_security_group_role_yaml.rendered))
-  inline_policy      = {
+  inline_policy {
     name   = "RevokeSecurityGroupPolicy"
     policy = jsonencode(yamldecode(data.template_file.revoke_security_group_policy_yaml.rendered))
   }
