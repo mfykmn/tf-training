@@ -1,45 +1,6 @@
 # tf-training
 [![CircleCI](https://circleci.com/gh/mafuyuk/tf-training.svg?style=svg)](https://circleci.com/gh/mafuyuk/tf-training)
 
-## AWS credentialsの設定追加
-```bash
-$ export AWS_ACCESS_KEY_ID=
-$ export AWS_SECRET_ACCESS_KEY=
-$ export AWS_SESSION_TOKEN=
-```
-
-## init
-tfstateをリモートで管理するS3バケットを用意する
-moduleの取得
-providerの取得
-バックエンドの構築(tfstateを保持するs3のバケット、ロックを制御するDynamoDBのテーブル)が行われる
-```bash
-$ export TF_PLUGIN_CACHE_DIR="$HOME/.terraform.d/plugin-cache"
-$ cd environments/init
-$ terraform init
-$ terraform plan -out .terraform/plan
-$ terraform apply -input .terraform/plan
-```
-
-
-## 構築
-```bash
-$ export TF_PLUGIN_CACHE_DIR="$HOME/.terraform.d/plugin-cache"
-$ cd environments/mutable
-$ terraform init
-$ terraform plan -out .terraform/plan
-$ terraform apply -input .terraform/plan
-```
-
-## Debug
-```bash
-$ export TF_LOG=DEBUG
-```
-
-## linter
-```bash
-$ awsp
-$ awsmfa
-$ cd ./modules/config/vpc-default-security-group-closed
-$ TFLINT_LOG=debug tflint
-```
+## Document
+- [Terraform コントリビューションガイド](./CONTRIBUTING.md)
+- [Terraform マニュアル](./MANUAL.md)
