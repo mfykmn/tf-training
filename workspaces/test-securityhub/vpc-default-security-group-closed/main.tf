@@ -2,11 +2,11 @@
 # IAM
 #####################################
 data "template_file" "revoke_security_group_policy_yaml" {
-  template = file("yaml-files/revoke_security_group_policy.yaml")
+  template = file("${path.module}/yaml-files/revoke_security_group_policy.yaml")
 }
 
 data "template_file" "revoke_security_group_role_yaml" {
-  template = file("yaml-files/revoke_security_group_role.yaml")
+  template = file("${path.module}/yaml-files/revoke_security_group_role.yaml")
 }
 
 resource "aws_iam_role" "revoke_security_group" {
@@ -23,7 +23,7 @@ resource "aws_iam_role" "revoke_security_group" {
 # SSM
 #####################################
 data "template_file" "close_security_group_ssm_document_yaml" {
-  template = file("yaml-files/close_security_group_ssm_document.yaml")
+  template = file("${path.module}/yaml-files/close_security_group_ssm_document.yaml")
 }
 
 resource "aws_ssm_document" "auto_disable_default_security_group" {
