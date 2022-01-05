@@ -29,7 +29,12 @@ $ export AWS_SESSION_TOKEN=
     ```bash
     $ export TF_PLUGIN_CACHE_DIR="$HOME/.terraform.d/plugin-cache"
     $ terraform plan -out .terraform/plan
-    $ terraform apply -input .terraform/plan
+    $ terraform apply ".terraform/plan"
+    ```
+- destroy
+    ```bash
+    $ terraform plan -out .terraform/plan -destroy
+    $ terraform apply ".terraform/plan"
     ```
 - Debug
     ```bash
