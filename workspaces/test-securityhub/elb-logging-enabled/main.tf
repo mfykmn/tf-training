@@ -25,6 +25,7 @@ resource "aws_subnet" "main" {
 # S3
 ####################
 resource "aws_s3_bucket" "alb_logs" {
+  bucket = "ALB-AccessLogs"
   acl    = "private"
 
   # S3バケットのデフォルト暗号化
@@ -69,9 +70,10 @@ resource "aws_alb" "alb" {
   subnets                    = [aws_subnet.main[0].id, aws_subnet.main[1].id]
   internal                   = false
   enable_deletion_protection = false
-  access_logs {
-    bucket  = aws_s3_bucket.alb_logs.bucket
-    prefix  = "PREFIX"
-    enabled = true
-  }
+# コメントアウトを外すとSecurity Hubは準拠の状態になる
+#  access_logs {
+#    bucket  = aws_s3_bucket.alb_logs.bucket
+#    prefix  = "myapp"
+#    enabled = true
+#  }
 }
