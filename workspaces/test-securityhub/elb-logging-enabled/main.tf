@@ -25,7 +25,7 @@ resource "aws_subnet" "main" {
 # S3
 ####################
 resource "aws_s3_bucket" "alb_logs" {
-  bucket = "ALB-AccessLogs"
+  bucket = "alb-accesslogs-0011"
   acl    = "private"
 
   # S3バケットのデフォルト暗号化
