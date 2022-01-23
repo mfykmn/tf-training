@@ -28,6 +28,7 @@ $ export AWS_SESSION_TOKEN=
 - apply
     ```bash
     $ export TF_PLUGIN_CACHE_DIR="$HOME/.terraform.d/plugin-cache"
+    $ terraform init -backend=false
     $ terraform plan -out .terraform/plan
     $ terraform apply ".terraform/plan"
     ```
